@@ -145,26 +145,23 @@ x<-cbind(1,x)
 library(MASS)
 n<-200
 q_<-10
-#y <- matrix(0,nrow = n, ncol = q_)
+y <- matrix(0,nrow = n, ncol = q_)
 
-y <- matrix(sample(c(0, 1), n*q_, replace = TRUE), nrow = n, ncol = q_, byrow = TRUE)
-#y <- matrix(0,nrow = n, ncol = q_, byrow = TRUE)
 for(i in 1:n){
-	yt<-rnorm(q_,0,1)
-	for(iter in 1:200){
-		for(j in 1:q_){
-			u<-0
-			for(k in 1:q_){
+yt<-rep(0,q_)
+   #for(iter in 1:100){
+	for(j in 1:q_){
+		u<-0
+		for(k in 1:q_){
 			if(k!=j) 
-			u<-u+t(theta[j,k,])%*%x[i,]*y[i,k]
-			#u<-u+t(theta[j,k,])%*%x[i,]*yt[k]
-			k<-k+1   ##q_个k相加	
+			u<-u+t(theta[j,k,])%*%x[i,]*yt[k]
+			k=k+1   ##q_个k相加	
 		}
-		yt[j]<-mean(mvrnorm(200,u,1))
+		yt[j]<-mean(rnorm(1000,u,1))
 	}
-	iter<-iter+1}
+	#iter<-iter+1}
 	y[i,]<-yt
-}
+	
 	
 }
 ##################################################################################				   
