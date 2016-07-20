@@ -9,7 +9,7 @@ rho<-0.2 #rho controls the sparsity of the graph
 beta<-2 #beta controls the signal strength
 p<-20 #q is the no. of variables 
 n<-200 #n is the sample size
-lambda<-0.01
+lambda<-0.0001
 
 phi<-function(p,q,n,x,y_)
 {
@@ -50,8 +50,8 @@ theta_hat_symetrize<-function(p,q,theta_hat,rule=c("and","or"))
 			{
 				for(l in 1:p)
 				{
-					theta_hat[j,k,l]<-ifelse(abs(theta_hat[j,k,l])>=abs(theta_hat[k,j,l]),abs(theta_hat[j,k,l]),abs(theta_hat[k,j,l]))
-				    abs(theta_hat[k,j,l])<-abs(theta_hat[j,k,l])	  
+					theta_hat[j,k,l]<-ifelse(abs(theta_hat[j,k,l])>=abs(theta_hat[k,j,l]),theta_hat[j,k,l],theta_hat[k,j,l])
+				    theta_hat[k,j,l]<-theta_hat[j,k,l]	  
 				}
 			}
 		}
@@ -65,7 +65,7 @@ theta_hat_symetrize<-function(p,q,theta_hat,rule=c("and","or"))
 			{
 				for(l in 1:p)
 				{
-					theta_hat[j,k,l]<-ifelse(theta_hat[j,k,l]<=theta_hat[k,j,l],theta_hat[j,k,l],theta_hat[k,j,l])
+					theta_hat[j,k,l]<-ifelse(abs(theta_hat[j,k,l])<=abs(theta_hat[k,j,l]),abs(theta_hat[j,k,l]),abs(theta_hat[k,j,l]))
 					theta_hat[k,j,l]<-theta_hat[j,k,l]	  
 				}
 			}
@@ -149,12 +149,12 @@ for(j in 1:(q-1))
 #generate the covariates x
 x<-mvrnorm(n,rep(0,p), diag(rep(1,p)))
 y <- matrix(0,nrow = n, ncol = q)
-y <- rnorm(q)
 
 for(i in 1:n)
 {
 	yt <-rep(5,q)
-    for(t in 1:500)
+	yt_new <-rnorm(q)
+    for(t in 1:100)
 	{
 		for(j in 1:q)
 		{
@@ -165,7 +165,7 @@ for(i in 1:n)
 				u<-u+(theta[j,k,]%*%x[i,])*y[i,k]
 				k=k+1   ##q-1个相加
 			}
-			yt[j]<-mean(mvrnorm(500,u,1))
+			yt[j]<-rnorm(1,u,1)
 		}
 		t<-t+1
 	}
@@ -184,24 +184,52 @@ one <- rep(1, nrow(y))
 	normy <- sqrt(drop(one %*% (y^2)))
 	y <- scale(y, FALSE, normy)
 
-fpr<-NULL
-tpr<-NULL				   
-from<-0
-to<-0.01
-seg<-0.001
+#fpr<-NULL
+#tpr<-NULL				   
+#from<-0
+#to<-0.01
+#seg<-0.001
 
 theta_hat1<-theta_hat(p,q,n,x,y,lambda,rule="or",penalty="SCAD")$theta_hat
 sum(theta_hat1)
-fpr_tpr(theta,theta_hat1)$FPR
-fpr_tpr(theta,theta_hat1)$TPR
+#fpr_tpr(theta,theta_hat1)$FPR
+#fpr_tpr(theta,theta_hat1)$TPR
 
+#for(lambda in (seq(from,to,seg)))
+#{
+	#theta_hat1<-theta_hat(p,q,n,x,y,lambda,rule="or",penalty="SCAD")
+	#fpr<-c(fpr,fpr_tpr(theta,theta_hat1)$FPR)
+	#tpr<-c(tpr,fpr_tpr(theta,theta_hat1)$TPR)
+#}
+#plot(fpr,tpr)
+
+fpr_tpr_edge<-function(G,theta_hat){
+                TP<-0
+				FP<-0
+				T<-sum(G!=0)/2
+				F<-sum(G==0)/2
+				for(j in 1:(q-1)){
+				   for(k in (j+1):q){
+				      
+					  if(G[j,k]!=0&crossprod(theta_hat[j,k,]!=0))
+					  TP<-TP+1
+					  if(G[j,k]==0&crossprod(theta_hat[j,k,]!=0))
+					  FP<-FP+1
+					  }}
+				TPR<-TP/T
+				FPR<-FP/F
+				list(TPR=TPR,FPR=FPR,T=T,F=F,TP=TP,FP=FP,P=TP+FP)
+                }	
+from<-0
+to<-0.1
+seg<-0.01
 for(lambda in (seq(from,to,seg)))
 {
-	theta_hat1<-theta_hat(p,q,n,x,y,lambda,rule="or",penalty="SCAD")
-	fpr<-c(fpr,fpr_tpr(theta,theta_hat1)$FPR)
-	tpr<-c(tpr,fpr_tpr(theta,theta_hat1)$TPR)
+	theta_hat1<-theta_hat(p,q,n,x,y,lambda,rule="and",penalty="SCAD")$theta_hat
+	fpr<-c(fpr,fpr_tpr_edge(G,theta_hat1)$FPR)
+	tpr<-c(tpr,fpr_tpr_edge(G,theta_hat1)$TPR)
+
 }
-plot(fpr,tpr)
 
 
 
