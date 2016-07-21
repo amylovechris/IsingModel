@@ -52,8 +52,7 @@ theta_hat_symetrize<-function(p,q_,theta_hat,rule=c("and","or")){
 					return(theta_hat)}
 
 #compute the fpr and tpr for a single estimator		
-fpr<-NULL
-tpr<-NULL				
+				
 fpr_tpr<-function(theta,theta_hat){
                 TP<-0
 				FP<-0
@@ -94,8 +93,8 @@ p<-20 #p is the no. of covariates
 rho<-0.2#rho controls the sparsity of the graph
 beta_<-0.6#beta_ controls the signal strength
 q_<-10  #q_ is the no. of variables 
-n<-500 #n is the sample size
-lambda<-0.01
+n<-200#n is the sample size
+#lambda<-0.01
 #iter<-300
 
 #generate the scale-free netwrok and thus getting the adjaency matrix G
@@ -131,7 +130,8 @@ for(j in 1:(q_-1)){
 	 else
 	 theta[j,k,l]<-2*beta_*rbinom(1,1,0.5)-beta_}
 	 theta[k,j,l]<-theta[j,k,l]}}}
-
+fpr<-NULL
+tpr<-NULL
 timestart<-Sys.time()
 l<-10#l is the no. of replications
 for(m in 1:l){
@@ -141,26 +141,22 @@ x<-mvrnorm(n,rep(0,p), diag(rep(1,p)))
 x<-cbind(1,x)
 
 #################################################################################################
-q_<-10  #q_ is the no. of variables 
-n<-500 #n is the sample size
 y <- matrix(0,nrow = n, ncol = q_)
-
 for(i in 1:n){
-yt<-rep(0,q_)
-   #for(iter in 1:100){
-	for(j in 1:q_){
-		u<-0
-		for(k in 1:q_){
-			if(k!=j) 
-			u<-u+t(theta[j,k,])%*%x[i,]*yt[k]
-			k<-k+1   ##q_个k相加	
-		}
-		yt[j]<-mean(rnorm(1000,u,1))
+	yt<-rep(10,q_)
+	for(iter in 1:10){
+		for(j in 1:q_){
+			u<-0
+			for(k in 1:q_){
+				if(k!=j) 
+				u<-u+(theta[j,k,]%*%x[i,])*yt[k]
+				k=k+1   ##q-1个相加
+			}
+		yt[j]<-mean(rnorm(1000,u,abs(yt[j]-u)))
+		yt[j]
 	}
-	#iter<-iter+1}
+	iter<-iter+1}
 	y[i,]<-yt
-	
-	
 }
 ##################################################################################				   
 
@@ -172,13 +168,13 @@ yt<-rep(0,q_)
 
 			   
 from<-0
-to<-0.1
+to<-0.05
 seg<-0.001
 
 for(lambda in (seq(from,to,seg))){
 theta_hat1<-theta_hat(p,q_,n,x,y,lambda,rule="and",penalty="SCAD")$theta_hat
-fpr<-c(fpr,fpr_tpr_edge(G,theta_hat1)$FPR)
-tpr<-c(tpr,fpr_tpr_edge(G,theta_hat1)$TPR)
+fpr<-c(fpr,fpr_tpr(theta,theta_hat1)$FPR)
+tpr<-c(tpr,fpr_tpr(theta,theta_hat1)$TPR)
 
 }
 }
@@ -187,10 +183,10 @@ timeend<-Sys.time()
 runningtime<-timeend-timestart
 print(runningtime) 	
 
-fit1<-loess(fpr~tpr,span=0.6,degree=2)
-TPR<-predict(fit1,seq(range(tpr)[1], range(tpr)[2], 0.005), se=TRUE)$fit
-FPR<-seq(range(tpr)[1], range(tpr)[2], 0.005)
-plot(TPR, FPR,col="green",xlim=c(0,1),ylim=c(0,1),xlab="False positive rate",ylab="True positive rate",lty=1,type="l",lwd=3)
+#fit1<-loess(tpr~fpr,span=0.7,degree=2)
+#TPR<-predict(fit1,seq(range(tpr)[1], range(tpr)[2], 0.005), se=TRUE)$fit
+#FPR<-seq(range(tpr)[1], range(tpr)[2], 0.005)
+#plot(FPR,TPR,col="green",xlim=c(0,1),ylim=c(0,1),xlab="False positive rate",ylab="True positive rate",lty=1,type="l",lwd=3)
 
 
 theta_hat1<-theta_hat(p,q_,n,x,y,lambda,rule="and",penalty="SCAD")$theta_hat
