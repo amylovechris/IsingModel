@@ -118,7 +118,7 @@ phi<-function(p,q_,n,x,y_)
     phi<-matrix(0,n,p*(q_-1))
 	for(i in 1:nrow(phi))
 	{
-		phi[,i]<-kronecker(y_[i,],x[i,])  #dim(kronecker(y[i,],x[i,]))=200,length(phi[i,])=180
+		phi[i,]<-kronecker(y_[i,],x[i,])  #dim(kronecker(y[i,],x[i,]))=200,length(phi[i,])=180
 	}
 	    return(t(phi))
 }
@@ -175,5 +175,3 @@ theta_hat_symetrize<-function(p,q_,theta_hat,rule=c("and","or"))
 			   
 theta_hat<-theta_hat_symetrize(p,q_,theta_hat,"and")
 list(theta_hat=theta_hat,lambda=lambda)
-
-
