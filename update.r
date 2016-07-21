@@ -95,7 +95,7 @@ y<- matrix(sample(c(0, 1), n*q_, replace = TRUE), nrow = n, ncol = q_, byrow = T
 #y <- matrix(0,nrow = n, ncol = q_, byrow = TRUE)
 for(i in 1:n){
 	yt<-rnorm(q_,0,1)
-	for(iter in 1:200){
+	#for(iter in 1:200){
 		for(j in 1:q_){
 			u<-0
 			for(k in 1:q_){
@@ -106,7 +106,7 @@ for(i in 1:n){
 		}
 		yt[j]<-mean(mvrnorm(200,u,1))
 	}
-	iter<-iter+1}
+	#iter<-iter+1}
 	y[i,]<-yt
 }
 ###################################################################################################

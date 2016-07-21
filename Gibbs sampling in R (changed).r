@@ -67,7 +67,7 @@ x<-cbind(1,x)
 
 
 #1.4 生成y
-y<-matrix(sample(c(0, 1), n*q_, replace = TRUE), nrow = n, ncol = q_, byrow = TRUE) #初始化
+#y<-matrix(, nrow = n, ncol = q_, byrow = TRUE) #初始化
 sampler<-function(iter){
 mat<-matrix(,nrow=iter,ncol=q_)  #用于放每次迭代得到的y
 	for(m in 1:iter){
@@ -86,6 +86,7 @@ mat<-matrix(,nrow=iter,ncol=q_)  #用于放每次迭代得到的y
 		mat[i,]<-yt[j]
 	}
 	return(mat)
+}
 }				  
 y<-sampler(10000)
 #y<-y[seq(1000,10000,by=100)]
